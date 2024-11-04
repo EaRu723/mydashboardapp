@@ -13,31 +13,14 @@ struct ContentView: View {
     
     var body: some View {
         TabView(selection: $selectedTab) {
-            ElectionsView(viewModel: viewModel)
-                .tabItem {
-                    Label("Elections", systemImage: "seal.fill")
-                }
-                .tag(0)
-            
-            TechnologyView(viewModel: viewModel)
-                .tabItem {
-                    Label("Technology", systemImage: "laptopcomputer")
-                }
-                .tag(1)
-            
-            BusinessView(viewModel: viewModel)
-                .tabItem {
-                    Label("Business", systemImage: "chart.line.uptrend.xyaxis")
-                }
-                .tag(2)
-            
-            SportsView(viewModel: viewModel)
-                .tabItem {
-                    Label("Sports", systemImage: "sportscourt.fill")
-                }
-                .tag(3)
+            ForEach(Array(NewsCategory.allCases.enumerated()), id: \.element) { index, category in
+                NewsContentView(category: category, viewModel: viewModel)
+                    .tabItem {
+                        Label(category.rawValue, systemImage: category.tabIcon)
+                    }
+                    .tag(index)
+            }
         }
-        // Load all headlines when the app first launches
         .task {
             await viewModel.loadHeadlines()
         }

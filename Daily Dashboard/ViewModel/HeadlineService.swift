@@ -8,6 +8,22 @@
 import Foundation
 
 class HeadlineService {
+    func headlineStream() -> AsyncStream<(NewsCategory, [Headline])> {
+        AsyncStream { continuation in
+            Task {
+                do {
+                    // Fetch each category independently
+                    for category in NewsCategory.allCases {
+                        let headlines = try await fetchHeadlinesByCategory(category)
+                        continuation.yield((category, headlines))
+                    }
+                    continuation.finish()
+                } catch {
+                    continuation.finish()
+                }
+            }
+        }
+    }
     
     func fetchHeadlinesByCategory(_ category: NewsCategory) async throws -> [Headline] {
         switch category {
@@ -38,20 +54,6 @@ class HeadlineService {
             return ventureBeatResults + techCrunchVCResults
         }
     }
-    
-    func fetchAllHeadlines() async throws -> [Headline] {
-        async let elections = fetchHeadlinesByCategory(.elections)
-        async let sports = fetchHeadlinesByCategory(.sports)
-        async let technology = fetchHeadlinesByCategory(.technology)
-        async let business = fetchHeadlinesByCategory(.business)
-        
-        let (electionNews, sportsNews, techNews, businessNews) = try await (
-            elections, sports, technology, business
-        )
-        
-        return electionNews + sportsNews + techNews + businessNews
-    }
-    
     
     private func fetchHeadlines(from urlString: String, source: NewsSource) async throws -> [Headline] {
         guard let url = URL(string: urlString) else {

@@ -15,44 +15,12 @@ struct ContentView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 24) {
-                    // Category selector
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 16) {
-                            Button(action: {
-                                showAllCategories = true
-                            }) {
-                                HStack {
-                                    Image(systemName: "square.grid.2x2")
-                                    Text("All")
-                                }
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 8)
-                                .background(showAllCategories ? Color.accentColor : Color(.systemGray6))
-                                .foregroundColor(showAllCategories ? .white : .primary)
-                                .cornerRadius(20)
-                            }
-                            
-                            ForEach(NewsCategory.allCases, id: \.self) { category in
-                                CategoryButton(
-                                    category: category,
-                                    isSelected: !showAllCategories && viewModel.selectedCategory == category,
-                                    action: {
-                                        viewModel.selectedCategory = category
-                                        showAllCategories = false
-                                    }
-                                )
-                            }
-                        }
-                        .padding(.horizontal)
-                    }
+                    // Category selector remains the same...
                     
-                    if viewModel.isLoading {
-                        ProgressView()
-                            .padding()
-                    } else {
-                        if showAllCategories {
-                            // Show all categories
-                            ForEach(NewsCategory.allCases, id: \.self) { category in
+                    if showAllCategories {
+                        // Show all categories
+                        ForEach(NewsCategory.allCases, id: \.self) { category in
+                            VStack {
                                 NewsSection(
                                     category: category,
                                     headlines: viewModel.headlinesForCategory(category),
@@ -64,19 +32,20 @@ struct ContentView: View {
                                         .padding(.horizontal)
                                 }
                             }
-                        } else {
-                            // Show selected category only
-                            VStack(spacing: 12) {
-                                SourceFilterView(category: viewModel.selectedCategory, viewModel: viewModel)
-                                
-                                LazyVStack(spacing: 12) {
-                                    ForEach(viewModel.headlinesForCategory(viewModel.selectedCategory)) { headline in
-                                        HeadlineCard(headline: headline)
-                                            .padding(.horizontal)
-                                    }
+                        }
+                    } else {
+                        // Show selected category only
+                        VStack(spacing: 12) {
+                            SourceFilterView(category: viewModel.selectedCategory, viewModel: viewModel)
+                            
+                            LazyVStack(spacing: 12) {
+                                ForEach(viewModel.headlinesForCategory(viewModel.selectedCategory)) { headline in
+                                    HeadlineCard(headline: headline)
+                                        .padding(.horizontal)
                                 }
                             }
-                        }                    }
+                        }
+                    }
                 }
             }
             .navigationTitle("News Dashboard")

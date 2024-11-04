@@ -58,9 +58,9 @@ enum NewsSource: String, Codable, CaseIterable {
         case .fotmob: return .purple
         case .milan: return .black
         case .hackerNews: return .orange
-        case .techCrunch: return .yellow
+        case .techCrunch: return .green
         case .ventureBeat: return .pink
-        case .techCrunchVC: return .cyan
+        case .techCrunchVC: return .green
         }
     }
 }

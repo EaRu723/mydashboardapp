@@ -25,6 +25,29 @@ class HeadlineService {
         }
     }
     
+    private func interweaveHeadlines(_ arrays: [[Headline]]) -> [Headline] {
+        var result: [Headline] = []
+        var indices = Array(repeating: 0, count: arrays.count)
+        
+        while true {
+            var addedAny = false
+            
+            for i in 0..<arrays.count {
+                if indices[i] < arrays[i].count {
+                    result.append(arrays[i][indices[i]])
+                    indices[i] += 1
+                    addedAny = true
+                }
+            }
+            
+            if !addedAny {
+                break
+            }
+        }
+        
+        return result
+    }
+    
     func fetchHeadlinesByCategory(_ category: NewsCategory) async throws -> [Headline] {
         switch category {
         case .elections:
@@ -33,25 +56,25 @@ class HeadlineService {
             async let onion = fetchHeadlines(from: URLs.onion, source: .theOnion)
             
             let (foxResults, cnnResults, onionResults) = try await (foxNews, cnn, onion)
-            return foxResults + cnnResults + onionResults
+            return interweaveHeadlines([foxResults, cnnResults, onionResults])
             
         case .sports:
             async let fotmob = fetchHeadlines(from: URLs.fotmob, source: .fotmob)
             async let milan = fetchHeadlines(from: URLs.milan, source: .milan)
             let (fotmobResults, milanResults) = try await (fotmob, milan)
-            return fotmobResults + milanResults
+            return interweaveHeadlines([fotmobResults, milanResults])
             
         case .technology:
             async let hackerNews = fetchHeadlines(from: URLs.hackerNews, source: .hackerNews)
             async let techCrunch = fetchHeadlines(from: URLs.techCrunch, source: .techCrunch)
             let (hackerNewsResults, techCrunchResults) = try await (hackerNews, techCrunch)
-            return hackerNewsResults + techCrunchResults
+            return interweaveHeadlines([hackerNewsResults, techCrunchResults])
             
         case .business:
             async let ventureBeat = fetchHeadlines(from: URLs.ventureBeat, source: .ventureBeat)
             async let techCrunchVC = fetchHeadlines(from: URLs.techCrunchVC, source: .techCrunchVC)
             let (ventureBeatResults, techCrunchVCResults) = try await (ventureBeat, techCrunchVC)
-            return ventureBeatResults + techCrunchVCResults
+            return interweaveHeadlines([ventureBeatResults, techCrunchVCResults])
         }
     }
     

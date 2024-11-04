@@ -24,24 +24,40 @@ struct NewsContentView: View {
     
     var body: some View {
         NavigationStack {
-            ZStack {
-                ScrollView {
-                    VStack(spacing: 12) {
-                        SourceFilterView(category: category, viewModel: viewModel)
-                        
+            VStack(spacing: 0) {
+                // Sticky Header
+                VStack(spacing: 16) {
+                    Text(category.rawValue)
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal)
+                    
+                    SourceFilterView(category: category, viewModel: viewModel)
+                }
+                .padding(.vertical)
+                .background(
+                    Color(UIColor.systemBackground)
+                        .shadow(color: .black.opacity(0.1), radius: 3, y: 2)
+                )
+                
+                // Scrollable Content
+                ZStack {
+                    ScrollView {
                         if viewModel.isLoading {
                             LoadingHeadlinesList()
                         } else {
                             HeadlinesList(headlines: viewModel.headlinesForCategory(category))
                         }
                     }
+                    
+                    if viewModel.isLoading && viewModel.headlinesForCategory(category).isEmpty {
+                        LoadingView()
+                    }
                 }
-                
-                if viewModel.isLoading && viewModel.headlinesForCategory(category).isEmpty {
-                    LoadingView()
-                }
+                .padding(.top)
             }
-            .navigationTitle(category.rawValue)
+            .navigationBarHidden(true)
             .task {
                 if viewModel.headlinesForCategory(category).isEmpty {
                     await viewModel.loadHeadlines()

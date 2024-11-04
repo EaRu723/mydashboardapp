@@ -15,9 +15,12 @@ class NewsViewModel: ObservableObject {
     @Published var selectedSources: Set<NewsSource> = []
     
     private let headlineService: HeadlineService
+    private let cacheService: HeadlineCacheService
     
-    init(headlineService: HeadlineService = HeadlineService()) {
+    
+    init(headlineService: HeadlineService = HeadlineService(), cacheService: HeadlineCacheService = HeadlineCacheService()) {
         self.headlineService = headlineService
+        self.cacheService = cacheService
         
         // Initialize empty arrays for each category
         for category in NewsCategory.allCases {
@@ -46,7 +49,14 @@ class NewsViewModel: ObservableObject {
     func loadHeadlines() async {
         isLoading = true
         
-        // Reset headlines for a fresh load
+        // Try to load from cache first
+        if let cachedHeadlines = await cacheService.getCachedHeadlines() {
+            headlinesByCategory = cachedHeadlines
+            isLoading = false
+            return
+        }
+        
+        // If no cache or expired, load fresh data
         for category in NewsCategory.allCases {
             headlinesByCategory[category] = []
         }
@@ -55,12 +65,13 @@ class NewsViewModel: ObservableObject {
             for try await (category, headlines) in headlineService.headlineStream() {
                 headlinesByCategory[category] = headlines
                 
-                // If no sources are selected for this category, select them all by default
                 let categorySources = Set(sourcesForCategory(category))
                 if selectedSources.intersection(categorySources).isEmpty {
                     selectedSources.formUnion(categorySources)
                 }
             }
+            // Cache the fresh headlines
+            await cacheService.cacheHeadlines(headlinesByCategory)
         } catch {
             print("Error loading headlines: \(error.localizedDescription)")
         }

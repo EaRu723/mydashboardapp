@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum NewsCategory: String, CaseIterable {
+enum NewsCategory: String, Codable, CaseIterable {
     case elections = "Elections"
     case technology = "Technology"
     case business = "Business"

@@ -31,19 +31,6 @@ struct LoadingHeadlinesList: View {
     }
 }
 
-struct HeadlinesList: View {
-    let headlines: [Headline]
-    
-    var body: some View {
-        LazyVStack(spacing: 12) {
-            ForEach(headlines) { headline in
-                HeadlineCard(headline: headline)
-                    .padding(.horizontal)
-            }
-        }
-    }
-}
-
 struct LoadingHeadlineCard: View {
     @State private var isAnimating = false
     

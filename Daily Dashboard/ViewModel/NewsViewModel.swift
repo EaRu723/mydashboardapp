@@ -15,16 +15,15 @@ class NewsViewModel: ObservableObject {
     @Published var selectedSources: Set<NewsSource> = []
     
     private let headlineService: HeadlineService
-    private let cacheService: HeadlineCacheService
     
     
-    init(headlineService: HeadlineService = HeadlineService(), cacheService: HeadlineCacheService = HeadlineCacheService()) {
+    init(headlineService: HeadlineService = HeadlineService()) {
         self.headlineService = headlineService
-        self.cacheService = cacheService
         
         // Initialize empty arrays for each category
         for category in NewsCategory.allCases {
             headlinesByCategory[category] = []
+            selectedSources.formUnion(sourcesForCategory(category))
         }
     }
     
@@ -33,49 +32,49 @@ class NewsViewModel: ObservableObject {
         case .elections:
             return [.foxNews, .cnn, .theOnion]
         case .sports:
-            return [.fotmob, .milan]
+            return [.footballItalia, .milan]
         case .technology:
             return [.hackerNews, .techCrunch]
         case .business:
-            return [.ventureBeat, .techCrunchVC]
+            return [.ventureBeat, .crunchBase, .yahooFinance]
         }
-    }
-    
-    func headlinesForCategory(_ category: NewsCategory) -> [Headline] {
-        let headlines = headlinesByCategory[category] ?? []
-        return headlines.filter { selectedSources.contains($0.source) }
     }
     
     func loadHeadlines() async {
         isLoading = true
+        print("Starting to load headlines")
         
-        // Try to load from cache first
-        if let cachedHeadlines = await cacheService.getCachedHeadlines() {
-            headlinesByCategory = cachedHeadlines
-            isLoading = false
-            return
-        }
-        
-        // If no cache or expired, load fresh data
+        // Clear existing headlines
         for category in NewsCategory.allCases {
             headlinesByCategory[category] = []
         }
         
         do {
+            // Process the stream of headlines
             for try await (category, headlines) in headlineService.headlineStream() {
-                headlinesByCategory[category] = headlines
-                
-                let categorySources = Set(sourcesForCategory(category))
-                if selectedSources.intersection(categorySources).isEmpty {
-                    selectedSources.formUnion(categorySources)
+                print("Received \(headlines.count) headlines for \(category)")
+                await MainActor.run {
+                    self.headlinesByCategory[category] = headlines
+                    print("Stored \(headlines.count) headlines in \(category) category")
                 }
             }
-            // Cache the fresh headlines
-            await cacheService.cacheHeadlines(headlinesByCategory)
         } catch {
-            print("Error loading headlines: \(error.localizedDescription)")
+            print("Error loading headlines: \(error)")
         }
         
         isLoading = false
+    }
+    
+    func headlinesForCategory(_ category: NewsCategory) -> [Headline] {
+        let headlines = headlinesByCategory[category] ?? []
+        let filtered = headlines.filter { selectedSources.contains($0.source) }
+        print("""
+            Category: \(category)
+            Available headlines: \(headlines.count)
+            Selected sources: \(selectedSources)
+            Filtered headlines: \(filtered.count)
+            First headline (if any): \(filtered.first?.originalText ?? "none")
+            """)
+        return filtered
     }
 }

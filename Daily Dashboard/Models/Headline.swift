@@ -9,13 +9,28 @@ import Foundation
 import SwiftUI
 
 struct HeadlineResponse: Codable {
-    let query: String
+    let query: [[String]]
     let results: [HeadlineItem]
 }
 
 struct HeadlineItem: Codable, Identifiable {
     let headline: String
+    let link: String?
+    
     var id: String { headline }
+    
+    // Move CodingKeys inside HeadlineItem
+    private enum CodingKeys: String, CodingKey {
+        case headline = "Headline"
+        case link = "Link"
+    }
+    
+    // Add decoder init for HeadlineItem
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        headline = try container.decode(String.self, forKey: .headline)
+        link = try container.decodeIfPresent(String.self, forKey: .link)
+    }
 }
 
 struct Headline: Identifiable, Codable {
@@ -43,24 +58,26 @@ enum NewsSource: String, Codable, CaseIterable {
     case foxNews = "Fox News"
     case cnn = "CNN"
     case theOnion = "The Onion"
-    case fotmob = "FotMob"
+    case footballItalia = "footballItalia"
     case milan = "Milan"
     case hackerNews = "Hacker News"
     case techCrunch = "TechCrunch"
     case ventureBeat = "VentureBeat"
-    case techCrunchVC = "TechCrunchVC"
+    case crunchBase = "crunchBase"
+    case yahooFinance = "Yahoo Finance"
     
     var color: Color {
         switch self {
         case .foxNews: return .red
         case .cnn: return .blue
         case .theOnion: return .green
-        case .fotmob: return .purple
+        case .footballItalia: return .purple
         case .milan: return .black
         case .hackerNews: return .orange
         case .techCrunch: return .green
         case .ventureBeat: return .pink
-        case .techCrunchVC: return .green
+        case .crunchBase: return .green
+        case .yahooFinance: return .brown
         }
     }
 }

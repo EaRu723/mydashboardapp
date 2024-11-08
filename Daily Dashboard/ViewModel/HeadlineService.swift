@@ -12,13 +12,14 @@ class HeadlineService {
         AsyncStream { continuation in
             Task {
                 do {
-                    // Fetch each category independently
                     for category in NewsCategory.allCases {
                         let headlines = try await fetchHeadlinesByCategory(category)
+                        print("Yielding \(headlines.count) headlines for \(category)")
                         continuation.yield((category, headlines))
                     }
                     continuation.finish()
                 } catch {
+                    print("Error in headline stream: \(error)")
                     continuation.finish()
                 }
             }
@@ -59,10 +60,10 @@ class HeadlineService {
             return interweaveHeadlines([foxResults, cnnResults, onionResults])
             
         case .sports:
-            async let fotmob = fetchHeadlines(from: URLs.fotmob, source: .fotmob)
+            async let footballItalia = fetchHeadlines(from: URLs.footballItalia, source: .footballItalia)
             async let milan = fetchHeadlines(from: URLs.milan, source: .milan)
-            let (fotmobResults, milanResults) = try await (fotmob, milan)
-            return interweaveHeadlines([fotmobResults, milanResults])
+            let (footballItaliaResults, milanResults) = try await (footballItalia, milan)
+            return interweaveHeadlines([footballItaliaResults, milanResults])
             
         case .technology:
             async let hackerNews = fetchHeadlines(from: URLs.hackerNews, source: .hackerNews)
@@ -72,20 +73,76 @@ class HeadlineService {
             
         case .business:
             async let ventureBeat = fetchHeadlines(from: URLs.ventureBeat, source: .ventureBeat)
-            async let techCrunchVC = fetchHeadlines(from: URLs.techCrunchVC, source: .techCrunchVC)
-            let (ventureBeatResults, techCrunchVCResults) = try await (ventureBeat, techCrunchVC)
-            return interweaveHeadlines([ventureBeatResults, techCrunchVCResults])
+            async let crunchBase = fetchHeadlines(from: URLs.crunchBase, source: .crunchBase)
+            async let yahooFinance = fetchHeadlines(from: URLs.yahooFinance, source: .yahooFinance)
+            let (ventureBeatResults, crunchBaseResults, yahooFinanceResults) = try await (ventureBeat, crunchBase, yahooFinance)
+            return interweaveHeadlines([ventureBeatResults, crunchBaseResults, yahooFinanceResults])
         }
     }
     
     private func fetchHeadlines(from urlString: String, source: NewsSource) async throws -> [Headline] {
+        print("Fetching headlines from: \(urlString)")
+        
         guard let url = URL(string: urlString) else {
+            print("Invalid URL: \(urlString)")
             throw URLError(.badURL)
         }
         
-        let (data, _) = try await URLSession.shared.data(from: url)
-        let response = try JSONDecoder().decode(HeadlineResponse.self, from: data)
-        
-        return response.results.map { Headline(from: $0, source: source) }
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            print("Received data of size: \(data.count) bytes")
+            
+            // Print raw JSON for debugging
+            if let jsonString = String(data: data, encoding: .utf8) {
+                print("Raw JSON data:")
+                print(jsonString)
+            }
+            
+            let response = try JSONDecoder().decode(HeadlineResponse.self, from: data)
+            print("Decoded Response:")
+            print("Query:", response.query)
+            print("Results count:", response.results.count)
+            print("First few results:")
+            response.results.prefix(3).forEach { item in
+                print("- Headline:", item.headline)
+                print("  Link:", item.link ?? "No link")
+            }
+            
+            let headlines = response.results.map { headlineItem in
+                let headline = Headline(from: headlineItem, source: source)
+                print("Mapped headline:")
+                print("- Original text:", headline.originalText)
+                print("- Source:", headline.source.rawValue)
+                print("- ID:", headline.id)
+                return headline
+            }
+            
+            print("\nFinal headlines array count:", headlines.count)
+            print("First few converted headlines:")
+            headlines.prefix(3).forEach { headline in
+                print("- Text:", headline.originalText)
+                print("  Source:", headline.source.rawValue)
+                print("  ID:", headline.id)
+            }
+            
+            return headlines
+        } catch {
+            print("Error fetching headlines for \(source.rawValue):")
+            print("Error details:", error)
+            if let decodingError = error as? DecodingError {
+                switch decodingError {
+                case .keyNotFound(let key, let context):
+                    print("Missing key:", key)
+                    print("Context:", context)
+                case .typeMismatch(let type, let context):
+                    print("Type mismatch. Expected:", type)
+                    print("Context:", context)
+                default:
+                    print("Other decoding error:", decodingError)
+                }
+            }
+            // Instead of throwing, return empty array to keep the stream going
+            return []
+        }
     }
 }

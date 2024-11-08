@@ -38,12 +38,14 @@ struct Headline: Identifiable, Codable {
     let originalText: String
     let source: NewsSource
     var isProcessing: Bool
+    let link: String?
     
-    init(id: UUID = UUID(), originalText: String, source: NewsSource, isProcessing: Bool = false) {
+    init(id: UUID = UUID(), originalText: String, source: NewsSource, isProcessing: Bool = false, link: String? = nil) {
         self.id = id
         self.originalText = originalText
         self.source = source
         self.isProcessing = isProcessing
+        self.link = link
     }
     
     init(from headlineItem: HeadlineItem, source: NewsSource) {
@@ -51,6 +53,7 @@ struct Headline: Identifiable, Codable {
         self.originalText = headlineItem.headline
         self.source = source
         self.isProcessing = false
+        self.link = headlineItem.link
     }
 }
 

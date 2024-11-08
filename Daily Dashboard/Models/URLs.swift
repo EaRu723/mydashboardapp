@@ -21,5 +21,5 @@ struct URLs {
     "https://lsd.so/huxley?query=give%20me%20every%20Headline%20and%20Link%20on%20this%20page&url=https%3A%2F%2Fnews.crunchbase.com%2F"
     static let footballItalia = "https://lsd.so/huxley?query=give%20me%20every%20Headline%20and%20Link%20on%20this%20page&url=https%3A%2F%2Ffootball-italia.net%2Fcategory%2Fnews%2F"
     static let milan =
-    "https://lsd.so/huxley?query=give%20me%20every%20Headline%20and%20Link%20on%20this%20page&url=https%3A%2F%2Fwww.fotmob.com%2Fteams%2F8564%2Fnews%2Fmilan"
+    "https://lsd.so/huxley?query=give%20me%20every%20Headline%20and%20Link%20on%20this%20page&url=https%3A%2F%2Fsempremilan.com%2F"
 }

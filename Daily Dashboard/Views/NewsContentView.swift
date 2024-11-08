@@ -58,14 +58,6 @@ struct NewsContentView: View {
                 .padding(.top)
             }
             .navigationBarHidden(true)
-            .task {
-                if viewModel.headlinesForCategory(category).isEmpty {
-                    await viewModel.loadHeadlines()
-                }
-            }
-            .refreshable {
-                await viewModel.loadHeadlines()
-            }
         }
     }
 }

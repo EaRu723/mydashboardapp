@@ -13,8 +13,8 @@ struct LoadingView: View {
             ProgressView()
                 .scaleEffect(1.5)
             
-            Text("Loading headlines...")
-                .foregroundColor(.secondary)
+//            Text("Loading headlines...")
+//                .foregroundColor(.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }

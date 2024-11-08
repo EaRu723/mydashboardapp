@@ -61,12 +61,12 @@ enum NewsSource: String, Codable, CaseIterable {
     case foxNews = "Fox News"
     case cnn = "CNN"
     case theOnion = "The Onion"
-    case footballItalia = "footballItalia"
-    case milan = "Milan"
+    case footballItalia = "Football Italia"
+    case milan = "Sempre Milan"
     case hackerNews = "Hacker News"
-    case techCrunch = "TechCrunch"
-    case ventureBeat = "VentureBeat"
-    case crunchBase = "crunchBase"
+    case techCrunch = "Tech Crunch"
+    case ventureBeat = "Venture Beat"
+    case crunchBase = "Crunch Base"
     case yahooFinance = "Yahoo Finance"
     
     var color: Color {
@@ -74,13 +74,13 @@ enum NewsSource: String, Codable, CaseIterable {
         case .foxNews: return .red
         case .cnn: return .blue
         case .theOnion: return .green
-        case .footballItalia: return .purple
-        case .milan: return .black
+        case .footballItalia: return .green
+        case .milan: return .red
         case .hackerNews: return .orange
         case .techCrunch: return .green
         case .ventureBeat: return .pink
         case .crunchBase: return .green
-        case .yahooFinance: return .brown
+        case .yahooFinance: return .purple
         }
     }
 }

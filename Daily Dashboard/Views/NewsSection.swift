@@ -46,9 +46,28 @@ struct NewsSection: View {
                         HeadlineCard(headline: headline)
                             .frame(width: cardWidth)
                     }
+                    Divider()
+                        .frame(height: 1)
+                        .padding(.horizontal)
                 }
                 .padding(.horizontal)
             }
         }
+    }
+}
+
+struct NewsSection_Previews: PreviewProvider {
+    static var previews: some View {
+        let viewModel = NewsViewModel()
+        NewsSection(
+            category: .technology,
+            headlines: [
+                Headline(originalText: "First Headline", source: .techCrunch),
+                Headline(originalText: "Second Headline", source: .hackerNews),
+                Headline(originalText: "Third Headline", source: .ventureBeat)
+            ],
+            viewModel: viewModel
+        )
+        .previewLayout(.sizeThatFits)
     }
 }

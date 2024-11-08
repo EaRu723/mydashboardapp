@@ -15,6 +15,7 @@ struct HeadlinesList: View {
             ForEach(headlines) { headline in
                 HeadlineCard(headline: headline)
                     .padding(.horizontal)
+                Divider()
             }
         }
     }
